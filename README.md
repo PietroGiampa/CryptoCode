@@ -4,3 +4,4 @@
 
   1)  Variables: Contains a list of variables that are used throughout the code (mostly crypto tags)
   2)  GetCurrency: Contains all the functions needed to retrive currency values (single day, weekly, yearly and 5 years options)
+  3)  Analysis: Contains the bulk of the analysis code, minus the likelihood functions (averages, peak finders)
