@@ -7,13 +7,13 @@
 ## Libraries
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy.signal import find_peaks
 from GetCurrency import GetCurrencySingleDay
 from GetCurrency import GetCurrencyOneYear
 from Variables import Bitcoin, Dogecoin, Shiba
 
-
 # Adding Averages to the DataFrame
-# Need to specify original category and # of days
+# Need to specify origin DataFrame, original category, and # of days
 def AddAverage(crypto, category, days):
     # Can only do averages if the data in the DataFrame is bigger than the requested averages
     if BTC.size/BTC.columns.size < days:
@@ -25,12 +25,9 @@ def AddAverage(crypto, category, days):
     #return updated DataFrame
     return crypto
 
-## Pick Crypto & Add 3 Days Weighted Average
-#BTC = GetCurrencyOneYear(Dogecoin)
-#BTC = AddAverage(BTC, 'Close', 2)
-#print(BTC.head())
-#BTC['Close'].plot.area(stacked=False)
-#BTC['Close_avg_2'].plot()
-#BTC['AC7'].plot()
-#BTC['AC4'].plot()
-#plt.show()
+# Peak Finder, based on SciPy library
+# Used to identify peaks for history analysis and model building
+# Need to specify original DataFrame, category, height and distance input
+def FindPeaksSciPy(crypto, category, height, distance):
+    peaks, notes = find_peaks(crypto[category], height=height, distance=distance)
+    return peaks
