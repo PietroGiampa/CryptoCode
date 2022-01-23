@@ -14,6 +14,10 @@ from Variables import Bitcoin, Dogecoin, Shiba
 
 # Adding Averages to the DataFrame
 # Need to specify origin DataFrame, original category, and # of days
+# -----
+# crypto - Pandas DataFrame
+# category - String
+# days - Integer
 def AddAverage(crypto, category, days):
     # Can only do averages if the data in the DataFrame is bigger than the requested averages
     if BTC.size/BTC.columns.size < days:
@@ -28,6 +32,31 @@ def AddAverage(crypto, category, days):
 # Peak Finder, based on SciPy library
 # Used to identify peaks for history analysis and model building
 # Need to specify original DataFrame, category, height and distance input
+# -----
+# crypto - Pandas DataFrame
+# category - String
+# height - Integer/Float
+# distance - Integer/Float 
 def FindPeaksSciPy(crypto, category, height, distance):
+    #Find peaks with SciPy
     peaks, notes = find_peaks(crypto[category], height=height, distance=distance)
+    #return arrays with peaks
     return peaks
+
+
+# GetBaseline, for selected category
+# Returns the average for a fix number of days
+# -----
+# crypto - Pandas DataFrame
+# category - String
+# days - Integer
+def GetBaseline(crypto, category, days):
+    #Initiate baseline
+    baseline = 0.
+    #Loop backwards in time
+    for k in range(days):
+        baseline = baseline + crypto[category][k]
+    #normalize by number of days selected
+    baseline = baseline/float(days)
+    #return baseline float
+    return baseline
