@@ -9,8 +9,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.signal import find_peaks
 from GetCurrency import GetCurrencySingleDay
+from GetCurrency import GetCurrencyPreviousWeek
 from GetCurrency import GetCurrencyOneYear
-from Variables import Bitcoin, Dogecoin, Shiba
+from Variables import Bitcoin, Dogecoin, Cosmos, Shiba
 
 # Adding Averages to the DataFrame
 # Need to specify origin DataFrame, original category, and # of days
