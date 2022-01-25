@@ -7,11 +7,11 @@
 ## Libraries
 import numpy as np
 import matplotlib.pyplot as plt
+import pandas as pd
 from scipy.signal import find_peaks
 from GetCurrency import GetCurrencySingleDay
 from GetCurrency import GetCurrencyPreviousWeek
 from GetCurrency import GetCurrencyOneYear
-from Variables import Bitcoin, Dogecoin, Cosmos, Shiba
 
 # Adding Averages to the DataFrame
 # Need to specify origin DataFrame, original category, and # of days
@@ -21,13 +21,34 @@ from Variables import Bitcoin, Dogecoin, Cosmos, Shiba
 # days - Integer
 def AddAverage(crypto, category, days):
     # Can only do averages if the data in the DataFrame is bigger than the requested averages
-    if BTC.size/BTC.columns.size < days:
+    if crypto.size/crypto.columns.size < days:
         return 'can not compute average'
     #Create name for the new DataFrame column to be added
     new_column_name = category+'_avg_%s'%str(days)
     #Loop over entries and calc average
     crypto[new_column_name] = crypto[category].rolling(window=days, center=False).mean()
     #return updated DataFrame
+    return crypto
+
+# Adding an UP, DOWN and EQUAL flag
+# Need to specify origin DataFrame
+# -----
+# crypto - Pandas DataFrame
+# category - String 
+def AddUPDOWN(crypto, category):
+    # Initialize Flag
+    status=[]
+    # Loop through DataFrame
+    for k in range(int(crypto.size/crypto.columns.size)-1):
+        if k==0:
+            status.append('EQUAL')
+        if crypto[category][k] < crypto[category][k-1]:
+            status.append('DOWN')
+        if crypto[category][k] > crypto[category][k-1]:
+            status.append('UP')
+        if crypto[category][k] == crypto[category][k-1]:
+            status.append('EQUAL')
+    crypto['UPDOWN'] = pd.Series(status, index=crypto.index)
     return crypto
 
 # Peak Finder, based on SciPy library
@@ -48,9 +69,7 @@ def FindPeaksSciPy(crypto, category, height, distance):
 # GetBaseline, for selected category
 # Returns the average for a fix number of days
 # -----
-# crypto - Pandas DataFrame
-# category - String
-# days - Integer
+# crypto_series - Series with tagged entries from DataFrame
 def GetBaseline(crypto, category, days):
     #Initiate baseline
     baseline = 0.
@@ -61,3 +80,4 @@ def GetBaseline(crypto, category, days):
     baseline = baseline/float(days)
     #return baseline float
     return baseline
+

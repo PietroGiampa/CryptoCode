@@ -10,4 +10,5 @@ import matplotlib.pyplot as plt
 from GetCurrency import GetCurrencySingleDay
 from GetCurrency import GetCurrencyPreviousWeek
 from GetCurrency import GetCurrencyOneYear
-from Variables import Bitcoin, Dogecoin, Cosmos, Shiba
+import Variables as currency
+

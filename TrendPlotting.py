@@ -8,10 +8,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.signal import find_peaks
-from GetCurrency import GetCurrencySingleDay
-from GetCurrency import GetCurrencyOneYear
-from GetCurrency import GetCurrencyPreviousWeek
-from Variables import Bitcoin, Dogecoin, Cosmos, Shiba
+import GetCurrency as gc
+import Variables as currency
 from datetime import datetime
 
 ###########################
@@ -28,18 +26,18 @@ from datetime import datetime
 ## Bitcoin, Degecoin, Cosmos, Shiba
 select_crypto = input('Select Crypto Currency: \n 1) Bitcoin \n 2) Dogecoin \n 3) Cosmos \n 4) Shiba \n -->')
 if select_crypto=='Bitcoin':
-    crypto = Bitcoin
+    crypto = currency.Bitcoin
 if select_crypto=='Dogecoin':
-    crypto = Dogecoin
+    crypto = currency.Dogecoin
 if select_crypto=='Cosmos':
-    crypto = Cosmos
+    crypto = currency.Cosmos
 if select_crypto=='Shiba':
-    crypto = Shiba
+    crypto = currency.Shiba
 
 ## Pull Data From Last Week and Last Year
-DF_Year = GetCurrencyOneYear(crypto)
+DF_Year = gc.GetCurrencyOneYear(crypto)
 today = datetime.today()
-DF_Week = GetCurrencyPreviousWeek(crypto, today.year, today.month, today.day)
+DF_Week = gc.GetCurrencyPreviousWeek(crypto, today.year, today.month, today.day)
 
 ## Plot Style
 plt.style.use('dark_background')
@@ -60,18 +58,4 @@ ax[3].plot(DF_Year.index, DF_Year['Volume'], 'pink')
 ax[3].set_ylabel('Volume')
 ax[3].set_xlabel('Date')
 ax[3].grid(True)
-plt.show()
-
-## Plotting 2D Trends
-fig1, ax1 = plt.subplots(nrows=1, ncols=3)
-#ax1.set_title('Correlation Plots')
-ax1[0].hexbin(DF_Year['Adj Close'], DF_Year['Volume'], bins='log', cmap='Oranges')
-ax1[0].set_xlabel('Adj Close')
-ax1[0].set_ylabel('Volume')
-ax1[1].hexbin(DF_Year['Adj Close'], DF_Year['High']-DF_Year['Low'], bins='log', cmap='Oranges')
-ax1[1].set_xlabel('Adj Close')
-ax1[1].set_ylabel('High-Low')
-ax1[2].hexbin(DF_Year['Adj Close'], DF_Year['Close']-DF_Year['Open'], bins='log', cmap='Oranges')
-ax1[2].set_xlabel('Adj Close')
-ax1[2].set_ylabel('Close-Open')
 plt.show()
