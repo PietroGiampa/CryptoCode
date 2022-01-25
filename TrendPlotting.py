@@ -23,16 +23,9 @@ from datetime import datetime
 # 6. Volume               #
 ###########################
 
-## Bitcoin, Degecoin, Cosmos, Shiba
-select_crypto = input('Select Crypto Currency: \n 1) Bitcoin \n 2) Dogecoin \n 3) Cosmos \n 4) Shiba \n -->')
-if select_crypto=='Bitcoin':
-    crypto = currency.Bitcoin
-if select_crypto=='Dogecoin':
-    crypto = currency.Dogecoin
-if select_crypto=='Cosmos':
-    crypto = currency.Cosmos
-if select_crypto=='Shiba':
-    crypto = currency.Shiba
+## Select Crypto Currency
+select_crypto = input('Select Crypto Currency: ')
+crypto = currency.GetCurrencyTag(select_crypto)
 
 ## Pull Data From Last Week and Last Year
 DF_Year = gc.GetCurrencyOneYear(crypto)

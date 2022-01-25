@@ -32,18 +32,8 @@ today = datetime.today()
 start_date = datetime(today.year-1, today.month, today.day)
 
 ## Set the cryptocurrency for simulations
-## Bitcoin, Degecoin, Cosmos, Shiba
 select_crypto = input('Select Crypto Currency: ')
 coin = currency.GetCurrencyTag(select_crypto)
-print(coin)
-#if select_crypto=='Bitcoin':
-#    coin = currency.Bitcoin
-#if select_crypto=='Dogecoin':
-#    coin = currency.Dogecoin
-#if select_crypto=='Cosmos':
-#    coin = currency.Cosmos
-#if select_crypto=='Shiba':
-#    coin = currency.Shiba
 
 ## Get Crypto Data
 crypto = gc.GetCurrencyOneYear(coin)
