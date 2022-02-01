@@ -69,7 +69,9 @@ def FindPeaksSciPy(crypto, category, height, distance):
 # GetBaseline, for selected category
 # Returns the average for a fix number of days
 # -----
-# crypto_series - Series with tagged entries from DataFrame
+# crypto - Series with tagged entries from DataFrame
+# categry - Float
+# days - Int
 def GetBaseline(crypto, category, days):
     #Initiate baseline
     baseline = 0.
@@ -81,3 +83,17 @@ def GetBaseline(crypto, category, days):
     #return baseline float
     return baseline
 
+# GetStatus, for selected category
+# Returns the investmet status
+# -----
+# crypto - Series with tagged entries from DataFrame
+def GetStatus(crypto, category):
+    status = 'Hold'
+    status_id = 2
+    if crypto[category][-1]>crypto[category][-2] and crypto[category][-2]>crypto[category][-3]:
+        status = 'Invest'
+        status_id = 3
+    if crypto[category][-1]<crypto[category][-2] and crypto[category][-2]<crypto[category][-3]:
+        status = 'Sell'
+        status_id = 1
+    return status, status_id

@@ -32,7 +32,7 @@ def GetCurrencySingleDay(currency, year, month, day):
 # day - Integer 
 def GetCurrencyPreviousWeek(currency, year, month, day):
     end = datetime(year, month, day)
-    start = end - timedelta(days=7)
+    start = end - timedelta(days=14)
     CC = pdr.DataReader(currency,'yahoo',start,end)
     return CC
 

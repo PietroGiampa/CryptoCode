@@ -8,6 +8,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import ticker, cm
+from matplotlib.dates import DateFormatter
 import os, glob
 import img2pdf
 from PIL import Image
@@ -33,27 +34,30 @@ from datetime import timedelta
 # Need to specify crypto
 # -----
 # select_crypto - String
-def GetOneYearOverview(select_crypto):
+def GetOverview(select_crypto, today, tag, status):
     crypto = currency.GetCurrencyTag(select_crypto)
 
     ## Pull Data From Last Week and Last Year
-    DF_Year = gc.GetCurrencyOneYear(crypto)
-    today = datetime.today()
-    DF_Week = gc.GetCurrencyPreviousWeek(crypto, today.year, today.month, today.day)
+    if tag=='Year':
+        DF = gc.GetCurrencyOneYear(crypto)
+    elif tag=='Week':
+        DF = gc.GetCurrencyPreviousWeek(crypto, today.year, today.month, today.day)
 
     ## Plot Style
     plt.style.use('dark_background')
     ax1 = plt.subplot2grid((2, 2), (0, 0), colspan=1)
-    ax1.plot(DF_Year.index, DF_Year['Adj Close'], 'red')
-    ax1.fill_between(DF_Year.index, DF_Year['Low'], DF_Year['High'], color='orange', alpha=0.5)
+    ax1.plot(DF.index, DF['Adj Close'], 'red')
+    ax1.fill_between(DF.index, DF['Low'], DF['High'], color='orange', alpha=0.5)
     ax1.set_ylabel('Adj Close')
     ax1.set_xlabel('Date')
     ax1.grid(True)
+    ax1.xaxis.set_major_formatter(DateFormatter("%m-%d"))
     ax2 = plt.subplot2grid((2, 2), (1, 0), colspan=1, sharex=ax1)
-    ax2.plot(DF_Year.index, DF_Year['Volume'], 'green')
+    ax2.plot(DF.index, DF['Volume'], 'green')
     ax2.set_ylabel('Volume')
     ax2.set_xlabel('Date')
     ax2.grid(True)
+    ax2.xaxis.set_major_formatter(DateFormatter("%m-%d"))
     ax3 = plt.subplot2grid((2, 2), (0, 1), rowspan=2)
     earnings = mc.SimPastYear(50000.0, 0.85, select_crypto)
     cs = ax3.contourf([1,2,3], [1,2,3], earnings, locator = ticker.LinearLocator(), cmap ="Greens")
@@ -66,7 +70,7 @@ def GetOneYearOverview(select_crypto):
     ax3.set_xlabel('Up Days - Invest')
     ax3.set_ylabel('Down Days - Sell')
     ax3.set_title('One Year MC Model')
-    title_str = 'Crypto: '+select_crypto
+    title_str = 'Crypto: '+select_crypto+' - '+status
     plt.suptitle(title_str)
     mng = plt.get_current_fig_manager()
     mng.resize(*mng.window.maxsize())    
@@ -85,23 +89,20 @@ def GetCurrencyStatus():
     status = []
     namex = []
     today = datetime.today()
+    tag='Week'
     img_list = []
     for n in range(len(names)):
         namex.append(n)
         print('Processing ... ', names[n])
-        crypto = currency.GetCurrencyTag(names[n])
+        crypto = currency.tags[n]
         DF1 = gc.GetCurrencyPreviousWeek(crypto, today.year, today.month, today.day)
-        DF1 = analysis.AddUPDOWN(DF1,'Volume')
-        setnum = int(DF1.size/DF1.columns.size)
-        if DF1['UPDOWN'][setnum-1]=='UP' and DF1['UPDOWN'][setnum-2]=='UP':
-            status.append(3)
-            GetOneYearOverview(names[n])
+        stat, stat_id = analysis.GetStatus(DF1, 'Volume')
+        status.append(stat_id)
+        if stat=='Invest' or stat=='Hold':
+            GetOverview(names[n], today, tag, stat)
             img_list.append('Reports/'+names[n]+'_'+str(today.day)+'_'+str(today.month)+'_'+str(today.year)+'.png')
-        elif DF1['UPDOWN'][setnum-1]=='DOWN' and DF1['UPDOWN'][setnum-2]=='DOWN':
-             status.append(1)             
-        else:
-            status.append(2)
 
+    plt.style.use('dark_background')
     fig, ax = plt.subplots()
     ax.stem(namex, status, markerfmt='ro')
     ax.set_xticks(namex)
@@ -125,3 +126,4 @@ def GetCurrencyStatus():
         im_list.append(rgb)
     im_list[0].save(ofile_name, "PDF" ,resolution=100.0, save_all=True, append_images=im_list[1:])
     return ofile_name
+
