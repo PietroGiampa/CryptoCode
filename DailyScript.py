@@ -31,5 +31,5 @@ def send_email(user, psw, receiver, body, filename):
     )
     print('successfully sent the mail')
 
-filename='Reports/Dogecoin_29_1_2022.png'
-send_email('giampapietro@gmail.com','qtbhvvwurtedunqb','danikaadam@gmail.com','Daily Crypto Investment Report',filename)
+filename = tp.GetCurrencyStatus()
+send_email('pdg.crypto.report@gmail.com','nkjlqubmstoelwpr','giampapietro@gmail.com','Daily Crypto Investment Report',filename)

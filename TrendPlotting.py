@@ -8,7 +8,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import ticker, cm
-from scipy.signal import find_peaks
+import os, glob
+import img2pdf
+from PIL import Image
 import GetCurrency as gc
 import Variables as currency
 import Simulations as mc
@@ -83,6 +85,7 @@ def GetCurrencyStatus():
     status = []
     namex = []
     today = datetime.today()
+    img_list = []
     for n in range(len(names)):
         namex.append(n)
         print('Processing ... ', names[n])
@@ -93,23 +96,32 @@ def GetCurrencyStatus():
         if DF1['UPDOWN'][setnum-1]=='UP' and DF1['UPDOWN'][setnum-2]=='UP':
             status.append(3)
             GetOneYearOverview(names[n])
+            img_list.append('Reports/'+names[n]+'_'+str(today.day)+'_'+str(today.month)+'_'+str(today.year)+'.png')
         elif DF1['UPDOWN'][setnum-1]=='DOWN' and DF1['UPDOWN'][setnum-2]=='DOWN':
-             status.append(1)
+             status.append(1)             
         else:
             status.append(2)
 
     fig, ax = plt.subplots()
-    ax.stem(namex, status)
+    ax.stem(namex, status, markerfmt='ro')
     ax.set_xticks(namex)
     ax.set_yticks([1,2,3])
     ax.set_yticklabels(['Sell','Hold','Invest'])
     ax.set_xticklabels(names, rotation=90)
-    ax.grid(True)
+    ax.grid(True, axis='y')
     ax.set_ylim(0.2,3.2)
+    ax.set_title('Crypto Trading Status')
     figure = plt.gcf()
     figure.set_size_inches(14, 8)
     fig_name = 'Reports/CryptoStatus_'+str(today.day)+'_'+str(today.month)+'_'+str(today.year)+'.png'
     plt.savefig(fig_name, dpi=100)
-    plt.show()
-    
-GetCurrencyStatus()
+    img_list.insert(0,fig_name)
+    ofile_name = 'Reports/DailyReport_'+str(today.day)+'_'+str(today.month)+'_'+str(today.year)+'.pdf'
+    im_list = []
+    for ii in range(len(img_list)):
+        rgba = Image.open(img_list[ii])
+        rgb = Image.new('RGB', rgba.size, (255, 255, 255))
+        rgb.paste(rgba, mask=rgba.split()[3])
+        im_list.append(rgb)
+    im_list[0].save(ofile_name, "PDF" ,resolution=100.0, save_all=True, append_images=im_list[1:])
+    return ofile_name

@@ -36,6 +36,17 @@ def GetCurrencyPreviousWeek(currency, year, month, day):
     CC = pdr.DataReader(currency,'yahoo',start,end)
     return CC
 
+# Get Currency Data for the N Days
+# Need to specify origin Currency, Delay
+# -----
+# currency - Float
+# delay = int
+def GetCurrencyPreviusNDays(currency, delay):
+    end = datetime.today()
+    start = end - timedelta(days=delay)
+    CC = pdr.DataReader(currency,'yahoo',start,end)
+    return CC
+
 # Get Currency Data for the Past Year
 # Need to specify origin DataFrame, year, month and day
 # -----
