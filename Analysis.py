@@ -51,6 +51,14 @@ def AddUPDOWN(crypto, category):
     crypto['UPDOWN'] = pd.Series(status, index=crypto.index)
     return crypto
 
+# Adding High-Low mediam
+# Need crypto DataFrame
+# -----
+# crypto - Pandas DataFrame
+def AddHighLowMedian(crypto):
+    crypto['Mid'] = (crypto['High']-crypto['Low'])/2.
+    return crypto
+
 # Peak Finder, based on SciPy library
 # Used to identify peaks for history analysis and model building
 # Need to specify original DataFrame, category, height and distance input
@@ -90,10 +98,39 @@ def GetBaseline(crypto, category, days):
 def GetStatus(crypto, category):
     status = 'Hold'
     status_id = 2
+    mean, variance = GetBasicStats(crypto, 2)
     if crypto[category][-1]>crypto[category][-2] and crypto[category][-2]>crypto[category][-3]:
-        status = 'Invest'
-        status_id = 3
+        if crypto[category][-1] > (mean[category]+variance[category]):
+            status = 'Invest - Invest'
+            status_id = 3
+        else:
+            status = 'Invest'
+            status_id = 3
     if crypto[category][-1]<crypto[category][-2] and crypto[category][-2]<crypto[category][-3]:
         status = 'Sell'
         status_id = 1
     return status, status_id
+
+# GetStats, for given category
+# Returns baseline, variance
+# -----
+# crypto - Series with tagged entries from DataFrame
+# invest - Integer
+def GetBasicStats(crypto,invest):
+    crypto_select = crypto.tail(7)
+    dropout = [crypto_select]
+    crypto_select.drop(crypto_select.index[[-1,-2]])
+    mean = crypto_select.mean()
+    variance = crypto_select.var()
+    return mean, variance
+
+# GetAwesomeOscillator, for a given category
+# Returns Awesome Oscillator
+# -----
+# crypto - DataFrame
+# category - String
+def GetAwesomeOscillator(crypto):
+    crypto_long = crypto.tail(34)
+    crypto_short = crypto.tail(5)
+    AweOsc = crypto_short.mean() - crypto_long.mean()
+    return AweOsc
