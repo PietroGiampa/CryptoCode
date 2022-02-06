@@ -59,7 +59,7 @@ def GetOverview(select_crypto, today, tag, status):
     ax2.grid(True)
     ax2.xaxis.set_major_formatter(DateFormatter("%m-%d"))
     ax3 = plt.subplot2grid((2, 2), (0, 1), rowspan=2)
-    earnings = mc.SimPastYear(50000.0, 0.85, select_crypto)
+    earnings = mc.SimPastYear(10000.0, 0.95, select_crypto)
     cs = ax3.contourf([1,2,3], [1,2,3], earnings, locator = ticker.LinearLocator(), cmap ="Greens")
     line_colors = ['black' for l in cs.levels]
     cp = ax3.contour([1,2,3], [1,2,3], earnings, colors=line_colors)
@@ -79,8 +79,75 @@ def GetOverview(select_crypto, today, tag, status):
     fig_name = 'Reports/'+select_crypto+'_'+str(today.day)+'_'+str(today.month)+'_'+str(today.year)+'.png'
     plt.savefig(fig_name, dpi=100)
 
+# Plot for Daily MACD
+# Need to specify crypto
+# -----
+# crypto - DataFrame
+# crypto_macd - DataFrame
+# tag - String
+# slow - Integer
+# fast - Integer
+# sgl - Integer
+# today - datetime
+def GetMACDplot(crypto, tag, slow, fast, sgl, today, status):
 
-#Plot for Daily report for investments
+    crypto_tag = currency.GetCurrencyTag(crypto)
+    ## Pull Data From Last Week and Last Year
+    if tag=='Year':
+        DF = gc.GetCurrencyOneYear(crypto_tag)
+    
+    ## Pull Data From Last Week and Last Year
+    if tag=='Week':
+        return 0
+
+    crypto_macd = analysis.GetMACDDF(DF, slow, fast, sgl)
+    
+    #ax1 = plt.subplot2grid((8,1), (0,0), rowspan = 5, colspan = 1)
+    #ax2 = plt.subplot2grid((8,1), (5,0), rowspan = 3, colspan = 1)
+
+    ax1 = plt.subplot2grid((2, 2), (0, 0), colspan=1)    
+    ax1.plot(DF.index, DF['Adj Close'], 'red')
+    ax1.fill_between(DF.index, DF['Low'], DF['High'], color='orange', alpha=0.5)
+    ax1.plot(DF['Close'])
+    ax1.set_ylabel('Close')
+    ax1.grid(True)
+    ax2 = plt.subplot2grid((2, 2), (1, 0), colspan=1, sharex=ax1)
+    ax2.plot(crypto_macd['macd'], color = 'violet', linewidth = 1.5, label = 'MACD')
+    ax2.plot(crypto_macd['signal'], color = 'royalblue', linewidth = 1.5, label = 'SIGNAL')
+    ax2.set_ylabel('MACD')
+    ax2.set_xlabel('Date')
+    ax2.grid(True)
+    ax2.xaxis.set_major_formatter(DateFormatter("%m-%d"))
+    for i in range(len(DF['Close'])):
+        if str(crypto_macd['hist'][i])[0] == '-':
+            ax2.bar(DF['Close'].index[i], crypto_macd['hist'][i], color = '#ef5350')
+        else:
+            ax2.bar(DF['Close'].index[i], crypto_macd['hist'][i], color = '#26a69a')
+
+    ax3 = plt.subplot2grid((2, 2), (0, 1), rowspan=2)
+    earnings = mc.MACDSimPastYear(10000.0, 0.95, crypto)
+    cs = ax3.contourf([1,2,3,4], [1,2,3,4], earnings, locator = ticker.LinearLocator(), cmap ="Greens")
+    line_colors = ['black' for l in cs.levels]
+    cp = ax3.contour([1,2,3,4], [1,2,3,4], earnings, colors=line_colors)
+    ax3.clabel(cp, fontsize=10, colors=line_colors)
+    #ax3.set_xticks(['24','25','26','27'])
+    #ax3.set_yticks(['12','13','15','16'])
+    ax3.grid(True)
+    ax3.set_xlabel('')
+    ax3.set_ylabel('Fast Component')
+    ax3.set_title('Slow Component')
+    title_str = 'MACD Crypto: '+crypto+' - '+status
+    plt.suptitle(title_str)
+
+    plt.style.use('dark_background')
+    mng = plt.get_current_fig_manager()
+    mng.resize(*mng.window.maxsize())
+    figure = plt.gcf() 
+    figure.set_size_inches(12, 7)
+    fig_name = 'Reports/macd_'+crypto+'_'+str(today.day)+'_'+str(today.month)+'_'+str(today.year)+'.png'
+    plt.savefig(fig_name, dpi=100)
+    
+# Plot for Daily report for investments
 # Need to specify crypto
 # -----
 # select_crypto - String 
@@ -89,8 +156,11 @@ def GetCurrencyStatus():
     status = []
     namex = []
     today = datetime.today()
-    tag='Week'
+    tag='Year'
     img_list = []
+    slow = 26
+    fast = 12
+    sgl = 9
     for n in range(len(names)):
         namex.append(n)
         print('Processing ... ', names[n])
@@ -101,6 +171,8 @@ def GetCurrencyStatus():
         if stat=='Invest' or stat=='Hold':
             GetOverview(names[n], today, tag, stat)
             img_list.append('Reports/'+names[n]+'_'+str(today.day)+'_'+str(today.month)+'_'+str(today.year)+'.png')
+            GetMACDplot(names[n], tag, slow, fast, sgl, today, stat)
+            img_list.append('Reports/macd_'+names[n]+'_'+str(today.day)+'_'+str(today.month)+'_'+str(today.year)+'.png')
 
     plt.style.use('dark_background')
     fig, ax = plt.subplots()

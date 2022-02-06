@@ -134,3 +134,20 @@ def GetAwesomeOscillator(crypto):
     crypto_short = crypto.tail(5)
     AweOsc = crypto_short.mean() - crypto_long.mean()
     return AweOsc
+
+# GetMACDDF, for a given crypto DataFrame
+# Returns a DataFrame for MACD
+# -----
+# crypto - DataFrame
+# slow - Integer
+# fast - Integer
+# sgl - Integer
+def GetMACDDF(crypto, slow, fast, sgl):
+    ewm_fast = crypto['Close'].ewm(span = fast, adjust = False).mean()
+    ewm_slow = crypto['Close'].ewm(span = slow, adjust = False).mean()
+    macd = pd.DataFrame(ewm_fast - ewm_slow).rename(columns = {'Close':'macd'})
+    signal = pd.DataFrame(macd.ewm(span = sgl, adjust = False).mean()).rename(columns = {'macd':'signal'})
+    hist = pd.DataFrame(macd['macd'] - signal['signal']).rename(columns = {0:'hist'})
+    frames =  [macd, signal, hist]
+    df = pd.concat(frames, join = 'inner', axis = 1)
+    return df

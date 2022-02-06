@@ -32,4 +32,5 @@ def send_email(user, psw, receiver, body, filename):
     print('successfully sent the mail')
 
 filename = tp.GetCurrencyStatus()
-send_email('pdg.crypto.report@gmail.com','nkjlqubmstoelwpr','giampapietro@gmail.com','Daily Crypto Investment Report',filename)
+password = input('Enter Password: ')
+send_email('pdg.crypto.report@gmail.com',password,'giampapietro@gmail.com','Daily Crypto Investment Report',filename)
