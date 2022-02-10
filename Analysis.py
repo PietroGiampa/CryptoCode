@@ -111,6 +111,34 @@ def GetStatus(crypto, category):
         status_id = 1
     return status, status_id
 
+# GetStatus, for selected category
+# Returns the investmet status
+# -----
+# crypto - Series with tagged entries from DataFrame
+def GetStatusMACD(crypto):
+    status = 'Hold'
+    status_id = 2
+    slow = 26
+    fast = 12
+    sgl = 9
+    crypto_macd = GetMACDDF(crypto, slow, fast, sgl)
+    for i in range(0, crypto['Close'].size):
+        if crypto_macd['macd'][i] < crypto_macd['signal'][i]:
+            if status != 'Invest':
+                status = 'Invest'
+                status_id = 3
+            else:
+                status = 'Hold'
+                status_id = 2
+        elif crypto_macd['macd'][i] > crypto_macd['signal'][i]:
+            if status == 'Invest':
+                signal = 'Sell'
+                status_id = 1
+            else:
+                signal = 'Hold'
+                status_id = 2
+    return status, status_id
+                    
 # GetStats, for given category
 # Returns baseline, variance
 # -----
@@ -149,5 +177,20 @@ def GetMACDDF(crypto, slow, fast, sgl):
     signal = pd.DataFrame(macd.ewm(span = sgl, adjust = False).mean()).rename(columns = {'macd':'signal'})
     hist = pd.DataFrame(macd['macd'] - signal['signal']).rename(columns = {0:'hist'})
     frames =  [macd, signal, hist]
+    df = pd.concat(frames, join = 'inner', axis = 1)
+    return df
+
+# GetMACDDF, for a given crypto DataFrame
+# Returns a DataFrame for MACD
+# -----
+# crypto - DataFrame
+# span - Integer
+def GetBollingerBands(crypto, span):
+    mean = crypto['Close'].ewm(span = span, adjust = False).mean()
+    std = crypto['Close'].ewm(span = span, adjust = False).std()
+    twostd = std*2.0
+    highband = pd.DataFrame(mean + twostd).rename(columns = {'Close':'high_band'})
+    lowband = pd.DataFrame(mean - twostd).rename(columns = {'Close':'low_band'})
+    frames = [mean, highband, lowband]
     df = pd.concat(frames, join = 'inner', axis = 1)
     return df

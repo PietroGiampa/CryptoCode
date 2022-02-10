@@ -102,9 +102,6 @@ def GetMACDplot(crypto, tag, slow, fast, sgl, today, status):
 
     crypto_macd = analysis.GetMACDDF(DF, slow, fast, sgl)
     
-    #ax1 = plt.subplot2grid((8,1), (0,0), rowspan = 5, colspan = 1)
-    #ax2 = plt.subplot2grid((8,1), (5,0), rowspan = 3, colspan = 1)
-
     ax1 = plt.subplot2grid((2, 2), (0, 0), colspan=1)    
     ax1.plot(DF.index, DF['Adj Close'], 'red')
     ax1.fill_between(DF.index, DF['Low'], DF['High'], color='orange', alpha=0.5)
@@ -130,8 +127,6 @@ def GetMACDplot(crypto, tag, slow, fast, sgl, today, status):
     line_colors = ['black' for l in cs.levels]
     cp = ax3.contour([1,2,3,4], [1,2,3,4], earnings, colors=line_colors)
     ax3.clabel(cp, fontsize=10, colors=line_colors)
-    #ax3.set_xticks(['24','25','26','27'])
-    #ax3.set_yticks(['12','13','15','16'])
     ax3.grid(True)
     ax3.set_xlabel('')
     ax3.set_ylabel('Fast Component')
@@ -146,7 +141,7 @@ def GetMACDplot(crypto, tag, slow, fast, sgl, today, status):
     figure.set_size_inches(12, 7)
     fig_name = 'Reports/macd_'+crypto+'_'+str(today.day)+'_'+str(today.month)+'_'+str(today.year)+'.png'
     plt.savefig(fig_name, dpi=100)
-    
+
 # Plot for Daily report for investments
 # Need to specify crypto
 # -----
@@ -165,8 +160,8 @@ def GetCurrencyStatus():
         namex.append(n)
         print('Processing ... ', names[n])
         crypto = currency.tags[n]
-        DF1 = gc.GetCurrencyPreviousWeek(crypto, today.year, today.month, today.day)
-        stat, stat_id = analysis.GetStatus(DF1, 'Volume')
+        DF1 = gc.GetCurrencyOneYear(crypto)
+        stat, stat_id = analysis.GetStatusMACD(DF1)
         status.append(stat_id)
         if stat=='Invest' or stat=='Hold':
             GetOverview(names[n], today, tag, stat)
