@@ -180,8 +180,35 @@ def GetMACDDF(crypto, slow, fast, sgl):
     df = pd.concat(frames, join = 'inner', axis = 1)
     return df
 
-# GetMACDDF, for a given crypto DataFrame
-# Returns a DataFrame for MACD
+def GetHeikinAshiCandles(crypto):
+    crypto['HA_Close'] = (crypto['Open'] + crypto['High'] + crypto['Low'] + crypto['Close']) / 4
+    crypto['HA_Open'] = (crypto['Open'].shift(1) + crypto['Open'].shift(1)) / 2
+    crypto.iloc[0, crypto.columns.get_loc("HA_Open")] = (crypto.iloc[0]['Open'] + crypto.iloc[0]['Close'])/2
+    crypto['HA_High'] = crypto[['High', 'Low', 'HA_Open', 'HA_Close']].max(axis=1)
+    crypto['HA_Low'] = crypto[['High', 'Low', 'HA_Open', 'HA_Close']].min(axis=1)
+    crypto['Date'] = crypto.index
+    df = crypto.drop(['Open', 'High', 'Low', 'Close', 'Volume'], axis=1)  # remove old columns
+    df = df.rename(columns={"Date":"Date", "HA_Open": "Open", "HA_High": "High", "HA_Low": "Low", "HA_Close": "Close"})
+    df = df[['Date','Open', 'High', 'Low', 'Close']]  # reorder columns
+    return df
+
+def GetRSI(crypto):
+    period = 14
+    delta = crypto.diff().dropna()
+    u = delta * 0
+    d = u.copy()
+    u[delta > 0] = delta[delta > 0]
+    d[delta < 0] = -delta[delta < 0]
+    u[u.index[period-1]] = np.mean( u[:period] ) #first value is sum of avg gains
+    u = u.drop(u.index[:(period-1)])
+    d[d.index[period-1]] = np.mean( d[:period] ) #first value is sum of avg losses
+    d = d.drop(d.index[:(period-1)])
+    rs = pd.DataFrame.ewm(u, com=period-1, adjust=False).mean() / \
+         pd.DataFrame.ewm(d, com=period-1, adjust=False).mean()
+    return 100 - 100 / (1 + rs)
+
+# GetBollingerBands, for a given crypto DataFrame
+# Returns a DataFrame for BollingerBands
 # -----
 # crypto - DataFrame
 # span - Integer
@@ -194,3 +221,5 @@ def GetBollingerBands(crypto, span):
     frames = [mean, highband, lowband]
     df = pd.concat(frames, join = 'inner', axis = 1)
     return df
+
+

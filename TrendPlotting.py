@@ -7,8 +7,10 @@
 ## Libraries
 import numpy as np
 import matplotlib.pyplot as plt
+import pandas as pd
 from matplotlib import ticker, cm
 from matplotlib.dates import DateFormatter
+import matplotlib.dates as mpdates
 import os, glob
 import img2pdf
 from PIL import Image
@@ -18,6 +20,7 @@ import Simulations as mc
 import Analysis as analysis
 from datetime import datetime
 from datetime import timedelta
+from mplfinance.original_flavor import candlestick_ohlc
 
 ###########################
 # DataFrame               #
@@ -194,3 +197,56 @@ def GetCurrencyStatus():
     im_list[0].save(ofile_name, "PDF" ,resolution=100.0, save_all=True, append_images=im_list[1:])
     return ofile_name
 
+def GetDailyReports():
+    names = currency.names
+    status = []
+    namex = []
+    today = datetime.today()
+    tag = 'Year'
+    img_list = []
+    slow = 26
+    fast = 12
+    sgl = 9
+    #len(names)
+    #for n in range(len(names)):
+    namex.append(23)
+    print('Processing ... ', names[23])
+    crypto = names[23]
+    crypto_tag = currency.GetCurrencyTag(crypto)
+    DF = gc.GetCurrencyOneYear(crypto_tag)
+    stat, stat_id = analysis.GetStatusMACD(DF)
+
+    crypto_macd = analysis.GetMACDDF(DF, slow, fast, sgl)
+    crypto_ha = analysis.GetHeikinAshiCandles(DF)
+    crypto_rsi = DF['Close']
+    rsi = analysis.GetRSI(crypto_rsi)
+    
+    crypto_ha['Date'] = pd.to_datetime(crypto_ha['Date'])
+    crypto_ha['Date'] = crypto_ha['Date'].map(mpdates.date2num)
+
+    ax1 = plt.subplot2grid((2, 2), (0, 0), colspan=1)
+    ax1.plot(rsi.index, rsi, 'red')
+    ax1.set_ylabel('Volume Indicator')
+    ax1.grid(True)
+    ax2 = plt.subplot2grid((2, 2), (1, 0), colspan=1, sharex=ax1)
+    ax2.plot(crypto_macd['macd'], color = 'darkorange', linewidth = 1.5, label = 'MACD')
+    ax2.plot(crypto_macd['signal'], color = 'royalblue', linewidth = 1.5, label = 'SIGNAL')
+    ax2.set_ylabel('Momentum Indicator')
+    ax2.set_xlabel('Date')
+    ax2.grid(True)
+    ax2.xaxis.set_major_formatter(DateFormatter("%m-%d"))
+    for i in range(len(DF['Close'])):
+        if str(crypto_macd['hist'][i])[0] == '-':
+            ax2.bar(DF['Close'].index[i], crypto_macd['hist'][i], color = '#ef5350')
+        else:
+            ax2.bar(DF['Close'].index[i], crypto_macd['hist'][i], color = '#26a69a')
+
+    ax3 = plt.subplot2grid((2, 2), (0, 1), rowspan=2)
+    candlestick_ohlc(ax3, crypto_ha.values, width = 0.6,colorup = 'green', colordown = 'red',alpha = 0.8)
+    ax3.grid(True)
+    date_format = mpdates.DateFormatter('%d/%m')
+    ax3.xaxis.set_major_formatter(date_format)
+    mng = plt.get_current_fig_manager()
+    mng.resize(*mng.window.maxsize())
+    figure = plt.gcf()
+    plt.show()
